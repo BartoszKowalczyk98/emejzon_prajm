@@ -17,16 +17,15 @@
         <h3>These are your uploaded files:</h3>
         <p>Click on the filename to download it.</p>
         <ul>
-            {% for item in contents %}
-            <li>
-                <td nowrap>
-                <a href="/download/{{ item.Key }}"> {{ item.Key }} </a> &nbsp; &nbsp;
-                <form action="/invert_image/{{ item.Key }}" method="post">
-                    <input type="submit" value="invert">
-                </form>
-                </td>
-            </li>
-            {% endfor %}
+            <form action="/invert_images" method="post">
+                {% for item in contents %}
+                <li>
+                    <a href="/download/{{ item.Key }}"> {{ item.Key }} </a> &nbsp;
+                    <input type="checkbox" name="{{ item.Key }}">
+                </li>
+                {% endfor %}
+                <button type="submit">Invert</button>
+            </form>
         </ul>
     </div>
 </div>
