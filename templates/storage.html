@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PSOIR</title>
+</head>
+<body>
+<div class="content">
+    <h3>PSOIR zaliczenie</h3>
+    <div>
+        <h3>Upload your file here:</h3>
+        <form method="POST" action="/upload" enctype=multipart/form-data>
+            <input type=file name=file>
+            <input type=submit value=Upload>
+        </form>
+    </div>
+    <div>
+        <h3>These are your uploaded files:</h3>
+        <p>Click on the filename to download it.</p>
+        <ul>
+            {% for item in contents %}
+            <li>
+                <a href="/download/{{ item.Key }}"> {{ item.Key }} </a>
+                <form action="/invert_image/{{ item.Key }}" method="post">
+                    <input type="submit" value="invert">
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+</body>
+</html>
