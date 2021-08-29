@@ -4,6 +4,7 @@ from s3_methods import list_files, download_file, upload_file
 
 app = Flask(__name__)
 UPLOAD_FOLDER = "uploads"
+DOWNLOAD_FOLDER = "downloads"
 BUCKET = "bk98flaskproject"
 
 
@@ -15,7 +16,7 @@ BUCKET = "bk98flaskproject"
 
 @app.route("/")
 def storage():
-    contents = list_files("bk98flaskproject")
+    contents = list_files(BUCKET)
     return render_template('storage.html', contents=contents)
 
 
@@ -24,7 +25,9 @@ def upload():
     if request.method == "POST":
         f = request.files['file']
         f.save(os.path.join(UPLOAD_FOLDER, f.filename))
-        upload_file(f"uploads/{f.filename}", BUCKET)
+
+        path = os.path.join(UPLOAD_FOLDER,f.filename)
+        upload_file(path, BUCKET, f.filename, os.path.getsize(path))
         # upload_file(f.filename, BUCKET)
 
         return redirect("/")
@@ -38,18 +41,30 @@ def invert_image(filename):
 
 
 
+
 @app.route("/download/<filename>", methods=['GET'])
 def download(filename):
-    print(filename)
     if request.method == 'GET':
-        output = download_file(filename, BUCKET)
+        path = os.path.join(DOWNLOAD_FOLDER, filename)
+        output = download_file(BUCKET, filename, path,1)
 
         return send_file(output, as_attachment=True)
 
 
+def clean_up():
+    # usuwanie z lokalnego folderu downloads
+    download_folder_path = os.path.join(DOWNLOAD_FOLDER)
+    for filename in os.listdir(download_folder_path):
+        os.remove(os.path.join(DOWNLOAD_FOLDER, filename))
+
+    # usuwanie plików z lokalnego folderu uploads
+    upload_folder_path = os.path.join(UPLOAD_FOLDER)
+    for filename in os.listdir(upload_folder_path):
+        os.remove(os.path.join(UPLOAD_FOLDER, filename))
 
 
 if __name__ == '__main__':
+    clean_up()
     app.run(debug=True)
 
 # todo wrzucanie plików do przeglądarki i to leci na s3 ma być zabezpieczony przed zapisem

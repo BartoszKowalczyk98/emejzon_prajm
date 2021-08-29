@@ -19,10 +19,12 @@
         <ul>
             {% for item in contents %}
             <li>
-                <a href="/download/{{ item.Key }}"> {{ item.Key }} </a>
+                <td nowrap>
+                <a href="/download/{{ item.Key }}"> {{ item.Key }} </a> &nbsp; &nbsp;
                 <form action="/invert_image/{{ item.Key }}" method="post">
                     <input type="submit" value="invert">
                 </form>
+                </td>
             </li>
             {% endfor %}
         </ul>
