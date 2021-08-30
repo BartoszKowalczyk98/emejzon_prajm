@@ -34,13 +34,14 @@ def upload():
         return redirect("/")
 
 
-@app.route('/invert_images', methods=['POST'])
-def invert_image():
+@app.route('/rotate_images', methods=['POST'])
+def rotate_image():
     if request.method == "POST":
         messages = []
-        for to_be_inverted in request.form:
-            messages.append(pack_message("path", to_be_inverted, "line"))
-        send_messages(queue, messages)
+        if request.form:
+            for to_be_rotated in request.form:
+                messages.append(pack_message("path", to_be_rotated, "line"))
+            send_messages(queue, messages)
 
     return redirect("/")
 
@@ -79,7 +80,3 @@ def pack_message(msg_path, msg_body, msg_line):
 if __name__ == '__main__':
     clean_up()
     app.run(debug=True)
-
-# todo wrzucanie plików do przeglądarki i to leci na s3 ma być zabezpieczony przed zapisem
-#  i batchowe obrabianie danych z kolejki z uwzględnieniem jakiegoś systemu bezpieczeńswta
-#  to będzie jako zalicznie do pokazania uruchomionej na infrastrukturze amazona

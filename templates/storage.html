@@ -5,7 +5,7 @@
 </head>
 <body>
 <div class="content">
-    <h3>PSOIR zaliczenie</h3>
+    <h3>PSOIR</h3>
     <div>
         <h3>Upload your file here:</h3>
         <form method="POST" action="/upload" enctype=multipart/form-data>
@@ -15,16 +15,18 @@
     </div>
     <div>
         <h3>These are your uploaded files:</h3>
+        <p>Click checkboxes and then button below to send tasks to rotate images.</p>
+        <button type="submit">Rotate 90°</button>
         <p>Click on the filename to download it.</p>
         <ul>
-            <form action="/invert_images" method="post">
+            <form action="/rotate_images" method="post">
                 {% for item in contents %}
                 <li>
                     <a href="/download/{{ item.Key }}"> {{ item.Key }} </a> &nbsp;
                     <input type="checkbox" name="{{ item.Key }}">
                 </li>
                 {% endfor %}
-                <button type="submit">Invert</button>
+
             </form>
         </ul>
     </div>
