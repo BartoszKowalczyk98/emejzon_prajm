@@ -2,12 +2,9 @@ import os
 
 import boto3
 from flask import Flask, render_template, request, redirect, send_file
-from wtforms import BooleanField
 
 from message_wrapper import send_messages
 from s3_methods import list_files, download_file, upload_file
-
-from flask_wtf import FlaskForm
 
 app = Flask(__name__)
 UPLOAD_FOLDER = "uploads"
@@ -16,12 +13,6 @@ BUCKET = "bk98flaskproject"
 sqs = boto3.resource('sqs', region_name='us-east-1')
 sqs_name = 'test_queue_psoir_239538'
 queue = sqs.get_queue_by_name(QueueName=sqs_name)
-
-
-#
-# @app.route('/')
-# def entry_point():
-#     return 'Hello World!'
 
 
 @app.route("/")
@@ -48,7 +39,7 @@ def invert_image():
     if request.method == "POST":
         messages = []
         for to_be_inverted in request.form:
-            messages.append(pack_message("path",to_be_inverted,"line"))
+            messages.append(pack_message("path", to_be_inverted, "line"))
         send_messages(queue, messages)
 
     return redirect("/")

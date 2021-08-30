@@ -2,11 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """
-Purpose
-    Demonstrate basic message operations in Amazon Simple Queue Service (Amazon SQS).
-    Learn how to send, receive, and delete messages from a queue.
-    Usage is shown in the test/test_message_wrapper.py file.
-
 Prerequisites
     - You must have an AWS account, and have your default credentials and AWS Region
       configured as described in the [AWS Tools and SDKs Shared Configuration and
@@ -36,7 +31,6 @@ Additional information
 """
 
 import logging
-import sys
 
 import boto3
 from botocore.exceptions import ClientError
@@ -44,7 +38,7 @@ from botocore.exceptions import ClientError
 import queue_wrapper
 
 logger = logging.getLogger(__name__)
-sqs = boto3.resource('sqs' , region_name='us-east-1')
+sqs = boto3.resource('sqs', region_name='us-east-1')
 
 
 def send_message(queue, message_body, message_attributes=None):
@@ -197,81 +191,3 @@ def delete_messages(queue, messages):
     else:
         return response
 
-
-def usage_demo():
-    """
-    Demonstrates some ways to use the functions in this module.
-
-    This demonstration reads the lines from this Python file and sends the lines in
-    batches of 10 as messages to a queue. It then receives the messages in batches
-    until the queue is empty. It reassembles the lines of the file and verifies
-    they match the original file.
-    """
-    def pack_message(msg_path, msg_body, msg_line):
-        return {
-            'body': msg_body,
-            'attributes': {
-                'path': {'StringValue': msg_path, 'DataType': 'String'},
-                'line': {'StringValue': str(msg_line), 'DataType': 'String'}
-            }
-        }
-
-    def unpack_message(msg):
-        return (msg.message_attributes['path']['StringValue'],
-                msg.body,
-                int(msg.message_attributes['line']['StringValue']))
-
-    queue = queue_wrapper.create_queue('sqs-usage-demo-message-wrapper')
-
-    with open(__file__) as file:
-        lines = file.readlines()
-
-    line = 0
-    batch_size = 10
-    received_lines = [None]*len(lines)
-    print(f"Sending file lines in batches of {batch_size} as messages.")
-    while line < len(lines):
-        messages = [pack_message(__file__, lines[index], index)
-                    for index in range(line, min(line + batch_size, len(lines)))]
-        line = line + batch_size
-        send_messages(queue, messages)
-        print('.', end='')
-        sys.stdout.flush()
-    print(f"Done. Sent {len(lines) - 1} messages.")
-
-    print(f"Receiving, handling, and deleting messages in batches of {batch_size}.")
-    more_messages = True
-    while more_messages:
-        received_messages = receive_messages(queue, batch_size, 2)
-        print('.', end='')
-        sys.stdout.flush()
-        for message in received_messages:
-            path, body, line = unpack_message(message)
-            received_lines[line] = body
-        if received_messages:
-            delete_messages(queue, received_messages)
-        else:
-            more_messages = False
-    print('Done.')
-
-    if all([lines[index] == received_lines[index] for index in range(len(lines))]):
-        print(f"Successfully reassembled all file lines!")
-    else:
-        print(f"Uh oh, some lines were missed!")
-
-    queue.delete()
-
-
-def main():
-    go = input("Running the usage demonstration uses your default AWS account "
-               "credentials and might incur charges on your account. Do you want "
-               "to continue (y/n)? ")
-    if go.lower() == 'y':
-        print("Starting the usage demo. Enjoy!")
-        usage_demo()
-    else:
-        print("Thanks anyway!")
-
-
-if __name__ == '__main__':
-    main()

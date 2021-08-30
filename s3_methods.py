@@ -1,10 +1,11 @@
 import sys
 import threading
+
 import boto3
-from boto3.s3.transfer import TransferConfig
 
 s3 = boto3.resource('s3')
 MB = 1024 * 1024
+
 
 class TransferCallback:
     """
@@ -54,7 +55,6 @@ def list_files(bucket):
     if list_of_s3_objects:
         for item in list_of_s3_objects:
             contents.append(item)
-
     return contents
 
 
@@ -83,4 +83,3 @@ def download_file(bucket_name, object_key,
         download_file_path,
         Callback=transfer_callback)
     return download_file_path
-
