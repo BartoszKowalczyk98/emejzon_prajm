@@ -15,20 +15,22 @@
     </div>
     <div>
         <h3>These are your uploaded files:</h3>
-        <p>Click checkboxes and then button below to send tasks to rotate images.</p>
-        <button type="submit">Rotate 90°</button>
         <p>Click on the filename to download it.</p>
-        <ul>
-            <form action="/rotate_images" method="post">
+        <form action="/rotate_images" method="post">
+
+            <p>Click checkboxes and then button on the right to send tasks to rotate images.
+                <button type="submit">Rotate 90°</button>
+            </p>
+            <ul>
                 {% for item in contents %}
-                <li>
-                    <a href="/download/{{ item.Key }}"> {{ item.Key }} </a> &nbsp;
+                <li style="list-style: none">
                     <input type="checkbox" name="{{ item.Key }}">
+                    <a href="/download/{{ item.Key }}"> {{ item.Key }} </a> &nbsp;
                 </li>
                 {% endfor %}
+            </ul>
+        </form>
 
-            </form>
-        </ul>
     </div>
 </div>
 </body>

@@ -1,8 +1,10 @@
 import os
+from io import BytesIO
 
 import boto3
 import requests
 from flask import Flask, render_template, request, redirect, send_file
+from werkzeug.wsgi import FileWrapper
 
 from message_wrapper import send_messages
 from presigned_url import create_presigned_url, create_presigned_post
@@ -28,13 +30,9 @@ def upload():
     if request.method == "POST":
         f = request.files['file']
         f.save(os.path.join(UPLOAD_FOLDER, f.filename))
-
         path = os.path.join(UPLOAD_FOLDER, f.filename)
         presigned_post = create_presigned_post(BUCKET, f.filename)
         requests.post(presigned_post['url'], presigned_post['fields'], files={'file': (path, open(path, "rb"))})
-        # upload_file(path, BUCKET, f.filename, os.path.getsize(path))
-        # # upload_file(f.filename, BUCKET)
-
         return redirect("/")
 
 
@@ -53,10 +51,16 @@ def rotate_image():
 @app.route("/download/<filename>", methods=['GET'])
 def download(filename):
     if request.method == 'GET':
-        path = os.path.join(DOWNLOAD_FOLDER, filename)
-        output = download_file(BUCKET, filename, path, 1)
-
-        return send_file(output, as_attachment=True)
+        presigned_url = create_presigned_url(bucket_name=BUCKET, object_name=filename)
+        output = requests.get(url=presigned_url)
+        filename_splitted = filename.split('.')
+        ext = filename_splitted[1]
+        format = 'image/' + ext.lower()
+        return send_file(
+            BytesIO(output.content),
+            mimetype=format,
+            as_attachment=True,
+            attachment_filename=filename)
 
 
 def clean_up():
