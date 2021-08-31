@@ -1,3 +1,9 @@
 .idea
 uploads/*
 downloads/*
+
+
+
+# exception to the rule
+!uploads/.gitkeep
+!downloads/.gitkeep

@@ -1,9 +1,11 @@
 import os
 
 import boto3
+import requests
 from flask import Flask, render_template, request, redirect, send_file
 
 from message_wrapper import send_messages
+from presigned_url import create_presigned_url, create_presigned_post
 from s3_methods import list_files, download_file, upload_file
 
 app = Flask(__name__)
@@ -28,8 +30,10 @@ def upload():
         f.save(os.path.join(UPLOAD_FOLDER, f.filename))
 
         path = os.path.join(UPLOAD_FOLDER, f.filename)
-        upload_file(path, BUCKET, f.filename, os.path.getsize(path))
-        # upload_file(f.filename, BUCKET)
+        presigned_post = create_presigned_post(BUCKET, f.filename)
+        requests.post(presigned_post['url'], presigned_post['fields'], files={'file': (path, open(path, "rb"))})
+        # upload_file(path, BUCKET, f.filename, os.path.getsize(path))
+        # # upload_file(f.filename, BUCKET)
 
         return redirect("/")
 
@@ -79,4 +83,5 @@ def pack_message(msg_path, msg_body, msg_line):
 
 if __name__ == '__main__':
     clean_up()
-    app.run(debug=True)
+    # app.run(host='0.0.0.0', port=80)
+    app.run()
