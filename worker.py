@@ -17,10 +17,8 @@ queue = sqs.get_queue_by_name(QueueName=sqs_name)
 
 
 def worker_thread():
-    messages = []
-    for message in receive_messages(queue=queue, max_number=1, wait_time=20):
-        messages.append(message)
-
+    # max wait_time żeby ciągnęło jak najmniej pieniędzy i żeby te do 5 wiadomości się mogło obsłużyć
+    messages = receive_messages(queue=queue, max_number=5, wait_time=20)
     for message in messages:
         s3_object = s3.meta.client.get_object(Bucket=bucket_name, Key=message.body)
         img = Image.open(io.BytesIO(s3_object['Body'].read()))
@@ -41,16 +39,12 @@ def worker_thread():
         s3.meta.client.put_object(Body=saved_img, Bucket=bucket_name, Key=filename)
 
         delete_message(message)
-        print('wykonano')
+        print('obsluzono plik ', filename, ' i usunieto message z sqs')
 
 
-def main():
+if __name__ == '__main__':
     while True:
         thread = Thread(target=worker_thread)
         thread.start()
         thread.join()
-        time.sleep(5)
-
-
-if __name__ == '__main__':
-    main()
+        time.sleep(3)
