@@ -19,9 +19,9 @@ queue = sqs.get_queue_by_name(QueueName=sqs_name)
 
 
 @app.route("/")
-def storage():
+def index():
     contents = list_files(BUCKET)
-    return render_template('storage.html', contents=contents)
+    return render_template('index.html', contents=contents)
 
 
 @app.route("/upload", methods=['POST'])
@@ -66,12 +66,14 @@ def clean_up():
     # usuwanie z lokalnego folderu downloads
     download_folder_path = os.path.join(DOWNLOAD_FOLDER)
     for filename in os.listdir(download_folder_path):
-        os.remove(os.path.join(DOWNLOAD_FOLDER, filename))
+        if not filename == ".gitkeep":
+            os.remove(os.path.join(DOWNLOAD_FOLDER, filename))
 
-    # usuwanie plików z lokalnego folderu uploads
+            # usuwanie plików z lokalnego folderu uploads
     upload_folder_path = os.path.join(UPLOAD_FOLDER)
     for filename in os.listdir(upload_folder_path):
-        os.remove(os.path.join(UPLOAD_FOLDER, filename))
+        if not filename == ".gitkeep":
+            os.remove(os.path.join(UPLOAD_FOLDER, filename))
 
 
 def pack_message(msg_path, msg_body, msg_line):

@@ -9,8 +9,9 @@ def list_files(bucket):
     """
     s3 = boto3.client('s3')
     contents = []
-    list_of_s3_objects = s3.list_objects(Bucket=bucket)['Contents']
-    if list_of_s3_objects:
-        for item in list_of_s3_objects:
+    list_of_s3_objects = s3.list_objects_v2(Bucket=bucket)
+    if list_of_s3_objects['KeyCount'] > 0:
+        temp = list_of_s3_objects['Contents']
+        for item in temp:
             contents.append(item)
     return contents
