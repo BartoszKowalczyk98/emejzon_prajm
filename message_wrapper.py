@@ -35,8 +35,6 @@ import logging
 import boto3
 from botocore.exceptions import ClientError
 
-import queue_wrapper
-
 logger = logging.getLogger(__name__)
 sqs = boto3.resource('sqs', region_name='us-east-1')
 
@@ -190,4 +188,3 @@ def delete_messages(queue, messages):
         logger.exception("Couldn't delete messages from queue %s", queue)
     else:
         return response
-

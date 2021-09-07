@@ -4,11 +4,10 @@ from io import BytesIO
 import boto3
 import requests
 from flask import Flask, render_template, request, redirect, send_file
-from werkzeug.wsgi import FileWrapper
 
 from message_wrapper import send_messages
 from presigned_url import create_presigned_url, create_presigned_post
-from s3_methods import list_files, download_file, upload_file
+from s3_methods import list_files
 
 app = Flask(__name__)
 UPLOAD_FOLDER = "uploads"

@@ -5,7 +5,7 @@ from threading import Thread
 import boto3
 from PIL import Image
 
-from message_wrapper import receive_messages
+from message_wrapper import receive_messages, delete_message
 
 sqs = boto3.resource('sqs', region_name='us-east-1')
 s3 = boto3.resource('s3')
@@ -25,22 +25,23 @@ def worker_thread():
         s3_object = s3.meta.client.get_object(Bucket=bucket_name, Key=message.body)
         img = Image.open(io.BytesIO(s3_object['Body'].read()))
 
-        filename_splitted = message.body.split('.')
-
         rotated = img.rotate(90)
         saved_img = io.BytesIO()
+
         # https://stackoverflow.com/questions/37048807/python-image-library-and-keyerror-jpg
         # w razie jeżeli dalej będą problemy z konwertowaniem to wyżej jest link do stacka
-        ext = filename_splitted[1]
-        rotated.save(saved_img, format='JPEG' if ext.lower() == 'jpg' else ext.upper())
+        split = message.body.split('.')
+        file_extension = split[1]
+        rotated.save(saved_img, format='JPEG' if file_extension.lower() == 'jpg' else file_extension.upper())
+        # powrót wskaźnika na początek do wrzucenia obiektu na s3
         saved_img.seek(0)
 
-        filename = filename_splitted[0] + '_rotated_.' + filename_splitted[1]
+        filename = split[0] + '_rotated_.' + split[1]
 
         s3.meta.client.put_object(Body=saved_img, Bucket=bucket_name, Key=filename)
 
-        message.delete()
-        print('done')
+        delete_message(message)
+        print('wykonano')
 
 
 def main():
