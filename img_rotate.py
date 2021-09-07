@@ -16,27 +16,30 @@ sqs_name = 'test_queue_psoir_239538'
 queue = sqs.get_queue_by_name(QueueName=sqs_name)
 
 
-def worker_thread():
+def message_operating_thread():
     # max wait_time żeby ciągnęło jak najmniej pieniędzy i żeby te do 5 wiadomości się mogło obsłużyć
     messages = receive_messages(queue=queue, max_number=5, wait_time=20)
     for message in messages:
         s3_object = s3.meta.client.get_object(Bucket=bucket_name, Key=message.body)
         img = Image.open(io.BytesIO(s3_object['Body'].read()))
 
-        rotated = img.rotate(90)
-        saved_img = io.BytesIO()
+        rotated_image = img.rotate(90)
+        image_to_be_saved = io.BytesIO()
+
+        # wyciągnięcie rozszerzenia z nazwy
+        split = message.body.split('.')
+        file_extension = split[1]
 
         # https://stackoverflow.com/questions/37048807/python-image-library-and-keyerror-jpg
         # w razie jeżeli dalej będą problemy z konwertowaniem to wyżej jest link do stacka
-        split = message.body.split('.')
-        file_extension = split[1]
-        rotated.save(saved_img, format='JPEG' if file_extension.lower() == 'jpg' else file_extension.upper())
+        rotated_image.save(image_to_be_saved, format='JPEG' if file_extension.lower() == 'jpg' else file_extension.upper())
+
         # powrót wskaźnika na początek do wrzucenia obiektu na s3
-        saved_img.seek(0)
+        image_to_be_saved.seek(0)
 
         filename = split[0] + '_rotated_.' + split[1]
 
-        s3.meta.client.put_object(Body=saved_img, Bucket=bucket_name, Key=filename)
+        s3.meta.client.put_object(Body=image_to_be_saved, Bucket=bucket_name, Key=filename)
 
         delete_message(message)
         print('obsluzono plik ', filename, ' i usunieto message z sqs')
@@ -44,7 +47,7 @@ def worker_thread():
 
 if __name__ == '__main__':
     while True:
-        thread = Thread(target=worker_thread)
+        thread = Thread(target=message_operating_thread)
         thread.start()
         thread.join()
-        time.sleep(3)
+        time.sleep(5)

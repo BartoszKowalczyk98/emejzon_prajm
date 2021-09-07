@@ -88,5 +88,5 @@ def pack_message(msg_path, msg_body, msg_line):
 
 if __name__ == '__main__':
     clean_up()
-    # app.run(host='0.0.0.0', port=80)
-    app.run()
+    app.run(host='0.0.0.0', port=80)
+    # app.run()
